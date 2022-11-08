@@ -33,4 +33,17 @@ const createUser = async (req, res) => {
   }
 };
 
-export { getUser, createUser };
+const deleteUser = async (req, res) => {
+  try {
+    const name = req.params.name;
+    await client.query(`delete from movies.user where name = '${name}';`);
+    return res.status(200).json(`User ${name} deleted`);
+  } catch (error) {
+    console.log("error", error);
+    return res.status(500).json({
+      error: error,
+    });
+  }
+};
+
+export { getUser, createUser, deleteUser };

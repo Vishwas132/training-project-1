@@ -10,4 +10,6 @@ userRoute.get("/address/:name", userAddressController.getUserAddress);
 
 userRoute.post("/", userController.createUser);
 
+userRoute.delete("/:name", userController.deleteUser);
+
 export default userRoute;
