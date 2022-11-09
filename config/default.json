@@ -1,0 +1,6 @@
+{
+  "app": {
+    "secretKey": "auth_using_JWT_Wittybrains",
+    "tokenExpireInSeconds": 30
+  }
+}
