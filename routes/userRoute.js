@@ -1,6 +1,5 @@
 import { Router } from "express";
 import * as userController from "../controllers/userController.js";
-import * as userAddressController from "../controllers/userAddressController.js";
 import getAddress from "../controllers/userAddressController.js";
 import sessionAuthenticate from "../middleware/middleware.js";
 
@@ -8,13 +7,7 @@ const userRoute = Router();
 
 userRoute.get("/", sessionAuthenticate, userController.getUser);
 
-userRoute.get("/", sessionAuthenticate, getAddress);
-
-userRoute.get(
-  "/address/",
-  sessionAuthenticate,
-  userAddressController.getUserAddress
-);
+userRoute.get("/address", sessionAuthenticate, getAddress);
 
 userRoute.post("/signup", userController.createUser);
 
