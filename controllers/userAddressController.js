@@ -1,14 +1,9 @@
-import client from "../models/database.js";
+import getUserAddress from "../service/getUserAddress.js";
 
-const getUserAddress = async (req, res) => {
+const getAddress = async (req, res) => {
   try {
-    const name = req.params.name;
-    const userId = await client.query(
-      `select id from movies.user where name = '${name}';`
-    );
-    const address = await client.query(
-      `select address from movies.user_contact where user_id = '${userId.rows[0].id}';`
-    );
+    const { email } = req.body;
+    const address = await getUserAddress(email);
     return res.status(200).json(address.rows);
   } catch (error) {
     // console.log("error", error);
@@ -18,4 +13,4 @@ const getUserAddress = async (req, res) => {
   }
 };
 
-export { getUserAddress };
+export default getAddress;

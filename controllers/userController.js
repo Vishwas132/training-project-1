@@ -1,12 +1,13 @@
-import client from "../models/database.js";
-import { createToken, verifyToken, getToken } from "../middleware/utils.js";
+import getUserById from "./../service/getUser.js";
+import createNewUser from "./../service/createUser.js";
+import deleteUserById from "./../service/deleteUser.js";
+import signInUser from "./../service/signInUser.js";
+import signOutUser from "./../service/signOutUser.js";
 
 const getUser = async (req, res) => {
   try {
     const { email } = req.body;
-    const userObj = await client.query(
-      `select name, email, active from movies.user where email = '${email}';`
-    );
+    const userObj = await getUserById(email);
     return res.status(200).json({
       user: userObj.rows[0],
     });
@@ -20,22 +21,7 @@ const getUser = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { name, email, active, phone_no, address } = req.body;
-
-    const userId = await (
-      await client.query(
-        `insert into movies.user (name, active, email) values ('${name}', ${active}, '${email}') returning id;`
-      )
-    ).rows[0].id;
-    await client.query(
-      `insert into movies.user_contact (user_id, phone_no, address) values (${userId}, ${phone_no}, '${address}');`
-    );
-
-    const token = createToken({ email });
-    console.log("token=", token);
-    await client.query(
-      `insert into movies.user_session (user_id, token) values (${userId}, '${token}');`
-    );
+    const token = await createNewUser(req);
     res.status(200).json({ token });
   } catch (error) {
     console.log("error", error);
@@ -46,11 +32,7 @@ const createUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const { email } = req.body;
-    const name = await (
-      await client.query(
-        `delete from movies.user where email = '${email}' returning name;`
-      )
-    ).rows[0].name;
+    const name = await deleteUserById(email);
     return res.status(200).json(`User ${name} with email ${email} deleted`);
   } catch (error) {
     console.log("error", error);
@@ -60,33 +42,9 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const signInUser = async (req, res) => {
+const signIn = async (req, res) => {
   try {
-    const { email } = req.body;
-    let token = getToken(req);
-
-    const userId = await (
-      await client.query(`select id from movies.user where email = '${email}';`)
-    ).rows[0].id;
-
-    const dbToken = await (
-      await client.query(
-        `select token from movies.user_session where user_id = ${userId};`
-      )
-    ).rows[0].token;
-
-    if (dbToken === null) {
-      token = createToken({ email });
-      await client.query(
-        `update movies.user_session set token = '${token}' where user_id = '${userId}';`
-      );
-    }
-    const payload = verifyToken(token);
-
-    if (payload.exp) {
-      if (dbToken == null || Date.now() > payload.exp * 1000) {
-      }
-    }
+    const token = await signInUser(req);
 
     return res.status(200).json({ token });
   } catch (error) {
@@ -97,19 +55,14 @@ const signInUser = async (req, res) => {
   }
 };
 
-const signOutUser = async (req, res) => {
+const signOut = async (req, res) => {
   try {
     const { email } = req.body;
-    const userId = await (
-      await client.query(`select id from movies.user where email = '${email}';`)
-    ).rows[0].id;
-    await client.query(
-      `update movies.user_session set token = null where user_id = ${userId};`
-    );
-    return res.status(200).json(`User signed out`);
+    const name = await signOutUser(email);
+    return res.status(200).json(`User ${name} with email ${email} signed out`);
   } catch (error) {
     return res.status(400).json({ error });
   }
 };
 
-export { getUser, createUser, signInUser, deleteUser, signOutUser };
+export { getUser, createUser, signIn, deleteUser, signOut };

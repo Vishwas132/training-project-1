@@ -1,13 +1,10 @@
 import { getToken, verifyToken } from "./utils.js";
-import getUserById from "../service/user.js";
+import getUserById from "../service/getUser.js";
 
 const sessionAuthenticate = async (req, res, next) => {
   try {
     const token = getToken(req);
-    console.log("token", token);
     const data = verifyToken(token);
-    console.log("data", data.exp * 1000);
-    console.log("Date.now()", Date.now());
     if (data && data.email) {
       const email = await getUserById(data.email);
       if (email.rows[0].email) {
